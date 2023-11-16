@@ -1,4 +1,6 @@
 import numpy as np
+import json
+import random
 
 class State:
 
@@ -11,6 +13,7 @@ class State:
         self.secret_word = secret_word
         self.current_guess = 0
         self.curr_score = 0
+        self.last_guess = ""
 
     def display(self):
         print("GUESS NUMBER ", self.current_guess)
@@ -33,7 +36,57 @@ class State:
 
     def get_new_guess(self):
         #TODO: Figure out an optimal guess
-        #Use the board + result + alphabet to figur out the best guess
+        possible_letters = self.alphabet_dict.keys()
+
+        with open("wordle_list.json", "r") as wordle_list:
+            vocabulary = json.load(wordle_list)
+
+        valid_words = []
+        #Step 1: Eliminate words which dont have letters in the dictionary
+        for word in vocabulary:
+            if len(word) == 5 and set(word).issubset(set(possible_letters)):
+                valid_words.append(word)
+
+        letters_in_word = [key for key, value in self.alphabet_dict.items() if value > 0]
+
+        #Remove words which don't contain '1' letters
+        filtered_vocab = [word for word in valid_words if set(letters_in_word).issubset(set(word))]
+
+        #TODO: HOW TO HANDLE THIS WHEN THERE ARE DUPLICATES??
+        #Remove words which don't contain '2' letters
+        letters_in_place = [key for key, value in self.alphabet_dict.items() if value > 1]
+
+        if letters_in_place:
+            last_guess = self.board[self.current_guess-1]
+            letter_indices = [last_guess.index(letter) for letter in letters_in_place]
+            
+            def filter_words(vocabulary):
+                filtered_vocabulary = []
+
+                for word in vocabulary:
+                    if all(word[i] == letter for i, letter in zip(letter_indices, letters_in_place)):
+                        filtered_vocabulary.append(word)
+
+                return filtered_vocabulary
+            
+            filtered_vocab = filter_words(filtered_vocab)
+
+        is_new = False
+
+        #TODO: This doesn't work?? --> gets stuck in infinite loop
+        #This tries to find a non-repeated work from the filtered vocab
+        # while not is_new:
+        #     next_guess = random.choice(filtered_vocab)
+        #     if not next_guess in self.board:
+        #         is_new = True
+        #         return random.choice(filtered_vocab)
+        
+        next_guess = random.choice(filtered_vocab)
+        return next_guess
+
+        #Ideally we want some metric that we can then use to potentially gain a "not best" guess
+        #Will be useful for the competitive wordle
+
         return "hello"
     
     def validate_guess(self, guess):
@@ -57,3 +110,9 @@ class State:
         #Trim the alphabet
         self.alphabet_dict = {key: value for key, value in self.alphabet_dict.items() if value != 0}
         self.current_guess += 1
+        # self.display()
+
+        if guess == self.secret_word:
+            print("YOU HAVE SOLVED THE WORDLE!!")
+            print("------------------------------------")
+            return True
