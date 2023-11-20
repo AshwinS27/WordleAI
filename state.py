@@ -98,14 +98,29 @@ class State:
     def evaluate(self, guess):
         #TODO: Right now no check for duplicates
         chars_word = [*self.secret_word]
+        feedback = ["-"] * len(self.secret_word)
 
+        # finding letters in right place
         for i in range(len(self.secret_word)):
             if guess[i] == self.secret_word[i]:
                 self.update_board(i, 2, guess)
+                feedback[i] = "X"
+                self.counter[guess[i]] += 1
             elif guess[i] in chars_word:
                 self.update_board(i, 1, guess)
+                feedback[i] = "O"
+                self.counter[guess[i]] += 1
             else:
                 self.update_board(i, 0, guess)
+        
+        # finding letters that are out of place
+        for i in range(len(self.secret_word)):
+            if feedback[i] == "X":
+                continue
+            elif guess[i] in chars_word and self.counter[guess[i]] < self.secret_word.count(guess[i]):
+                self.update_board(i, 1, guess)
+                feedback[i] = "O"
+                self.counter[guess[i]] += 1
 
         #Trim the alphabet
         self.alphabet_dict = {key: value for key, value in self.alphabet_dict.items() if value != 0}
