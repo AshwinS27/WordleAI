@@ -1,6 +1,7 @@
 import numpy as np
 import json
 import random
+from collections import Counter
 
 class State:
 
@@ -14,6 +15,8 @@ class State:
         self.current_guess = 0
         self.curr_score = 0
         self.last_guess = ""
+        self.good_word = True
+        self.counter = Counter()
 
     def display(self):
         print("GUESS NUMBER ", self.current_guess)
@@ -31,11 +34,10 @@ class State:
         self.board[self.current_guess] = guess
         self.result[self.current_guess][i] = value
         self.alphabet[self.get_alphabet_index(guess[i])] = value
-        self.alphabet_dict[guess[i]] = value
+        self.alphabet_dict[guess[i]] = max(value, self.alphabet_dict[guess[i]])
         self.curr_score += 1
 
     def get_new_guess(self):
-        #TODO: Figure out an optimal guess
         possible_letters = self.alphabet_dict.keys()
 
         with open("wordle_list.json", "r") as wordle_list:
@@ -52,24 +54,43 @@ class State:
         #Remove words which don't contain '1' letters
         filtered_vocab = [word for word in valid_words if set(letters_in_word).issubset(set(word))]
 
-        #TODO: HOW TO HANDLE THIS WHEN THERE ARE DUPLICATES??
         #Remove words which don't contain '2' letters
         letters_in_place = [key for key, value in self.alphabet_dict.items() if value > 1]
 
         if letters_in_place:
             last_guess = self.board[self.current_guess-1]
-            letter_indices = [last_guess.index(letter) for letter in letters_in_place]
-            
+
+            def get_all_indices(word, letter):
+                return [i for i in range(len(word)) if word[i] == letter]
+
+            letter_indices = [get_all_indices(last_guess, letter) for letter in letters_in_place]
+            filter_letter_indices = []
+            repeated_letters_in_place = []
+            for index_set, letter in zip(letter_indices, letters_in_place):
+                for index in index_set:
+                    if self.result[self.current_guess-1][index] == 2: #Only keep it if correct place
+                        filter_letter_indices.append(index)
+                        repeated_letters_in_place.append(letter)
+
+            #Remove words which don't have letters with score 2 in correct place
             def filter_words(vocabulary):
                 filtered_vocabulary = []
 
                 for word in vocabulary:
-                    if all(word[i] == letter for i, letter in zip(letter_indices, letters_in_place)):
+                    if all(word[i] == letter for i, letter in zip(filter_letter_indices, repeated_letters_in_place)):
                         filtered_vocabulary.append(word)
 
                 return filtered_vocabulary
             
             filtered_vocab = filter_words(filtered_vocab)
+            print("Finally filtered vocabulary", filtered_vocab)
+
+        ##TODO: Remove words which have letters with score 1 == definitely in the wrong place
+        ## If word is crane == [0 0 1 0 0] --> we include all words which have 'a' but dont have crne --> ALREADY DONE
+        ## WHAT WE DONT HAVE RN --> We are not removing words which have __a__ in the second index
+
+        #Get respective index of each '1' letter
+        #Remove words which have '1' letter in last guess spot
 
         is_new = False
 
@@ -90,15 +111,19 @@ class State:
         return "hello"
     
     def validate_guess(self, guess):
-        #TODO: Add check for valid guess
-        if len(guess) == self.num_letters: #Add check for valid word in vocabulary
-            return True
-        
+        with open('wordle_list.json', 'r') as wordle_list:
+            valid = json.load(wordle_list)
+        if guess in valid:
+            self.good_word = True
+        else:
+            self.good_word = False
+        return self.good_word
 
     def evaluate(self, guess):
         #TODO: Right now no check for duplicates
         chars_word = [*self.secret_word]
         feedback = ["-"] * len(self.secret_word)
+        self.counter = Counter()
 
         # finding letters in right place
         for i in range(len(self.secret_word)):
@@ -112,20 +137,20 @@ class State:
                 self.counter[guess[i]] += 1
             else:
                 self.update_board(i, 0, guess)
-        
+
         # finding letters that are out of place
         for i in range(len(self.secret_word)):
             if feedback[i] == "X":
                 continue
-            elif guess[i] in chars_word and self.counter[guess[i]] < self.secret_word.count(guess[i]):
-                self.update_board(i, 1, guess)
-                feedback[i] = "O"
-                self.counter[guess[i]] += 1
+            elif guess[i] in chars_word and self.counter[guess[i]] > self.secret_word.count(guess[i]):
+                self.update_board(i, 0, guess)
+                feedback[i] = "-"
+                # self.counter[guess[i]] += 1
 
         #Trim the alphabet
         self.alphabet_dict = {key: value for key, value in self.alphabet_dict.items() if value != 0}
         self.current_guess += 1
-        # self.display()
+        self.display()
 
         if guess == self.secret_word:
             print("YOU HAVE SOLVED THE WORDLE!!")

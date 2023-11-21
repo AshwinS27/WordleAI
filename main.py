@@ -13,15 +13,17 @@ num_fail = 0
 num_error = 0
 tot_guesses = 0
 
-for i in range(1000):
+# Board:  ['crane', 'fixes', 'sells', 'belly', [], [], [], []]
+
+for i in range(10):
     try:
-        secret_word = random.choice(word_list)
+        secret_word = "erred" #random.choice(word_list)
         print("SECRET WORD: " + secret_word)
 
         my_state = state.State(NUM_LETTERS, TOTAL_GUESSES, secret_word)
 
         my_state.evaluate("crane")
-        my_state.display()
+        #my_state.display()
 
         # my_state.evaluate("toils")
         # my_state.display()
@@ -29,10 +31,20 @@ for i in range(1000):
         num_guesses = 0
 
         finished = False
+
+        # ## FOR DEBUG ONLY ##
+        # my_state.evaluate("fixes")
+        # num_guesses += 1
+        # my_state.evaluate("sells")
+        # num_guesses += 1
+        # ## END DEBUG ONLY ##
+
         while not finished and num_guesses < TOTAL_GUESSES-1:
             new_guess = my_state.get_new_guess()
             finished = my_state.evaluate(new_guess)
             num_guesses += 1
+
+            new_guess = my_state.get_new_guess()
 
         print("Secret word", secret_word)
         print("Guesses Taken", num_guesses+1)
