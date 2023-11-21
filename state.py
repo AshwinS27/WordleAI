@@ -9,7 +9,6 @@ class State:
         self.num_letters = num_letters
         self.board = [[]] * tot_guesses # Contains each guess
         self.result = np.full((tot_guesses, num_letters), -1)
-        self.alphabet = [-1] * 26
         self.alphabet_dict = {chr(i): -1 for i in range(ord('a'), ord('z') + 1)}
         self.secret_word = secret_word
         self.current_guess = 0
@@ -23,7 +22,6 @@ class State:
         print("Board: ", self.board)
         print("Result: ")
         print(self.result)
-        # print("Alphabet: ", self.alphabet)
         print("Alphabet: ", self.alphabet_dict)
         print("--------------------------------------------------------")
 
@@ -33,27 +31,10 @@ class State:
     def update_board(self, i, value, guess):
         self.board[self.current_guess] = guess
         self.result[self.current_guess][i] = value
-        self.alphabet[self.get_alphabet_index(guess[i])] = value
         self.alphabet_dict[guess[i]] = max(value, self.alphabet_dict[guess[i]])
         self.curr_score += 1
 
-    def get_new_guess(self):
-        possible_letters = self.alphabet_dict.keys()
-
-        with open("wordle_list.json", "r") as wordle_list:
-            vocabulary = json.load(wordle_list)
-
-        valid_words = []
-        #Step 1: Eliminate words which dont have letters in the dictionary
-        for word in vocabulary:
-            if len(word) == 5 and set(word).issubset(set(possible_letters)):
-                valid_words.append(word)
-
-        letters_in_word = [key for key, value in self.alphabet_dict.items() if value > 0]
-
-        #Remove words which don't contain '1' letters
-        filtered_vocab = [word for word in valid_words if set(letters_in_word).issubset(set(word))]
-
+    def get_words_consistent_with_2(self, vocab_in):
         #Remove words which don't contain '2' letters
         letters_in_place = [key for key, value in self.alphabet_dict.items() if value > 1]
 
@@ -82,8 +63,29 @@ class State:
 
                 return filtered_vocabulary
             
-            filtered_vocab = filter_words(filtered_vocab)
-            print("Finally filtered vocabulary", filtered_vocab)
+            return filter_words(vocab_in)
+        else:
+            return vocab_in
+        
+    def get_new_guess(self):
+        possible_letters = self.alphabet_dict.keys()
+
+        with open("wordle_list.json", "r") as wordle_list:
+            vocabulary = json.load(wordle_list)
+
+        valid_words = []
+        #Step 1: Eliminate words which dont have letters in the dictionary
+        for word in vocabulary:
+            if len(word) == 5 and set(word).issubset(set(possible_letters)):
+                valid_words.append(word)
+
+        filtered_vocab = [key for key, value in self.alphabet_dict.items() if value > 0]
+
+        #Remove words which don't contain '1' letters
+        filtered_vocab = [word for word in valid_words if set(filtered_vocab).issubset(set(word))]
+
+        #Remove words not consistent with '2' letters
+        filtered_vocab = self.get_words_consistent_with_2(filtered_vocab)
 
         ##TODO: Remove words which have letters with score 1 == definitely in the wrong place
         ## If word is crane == [0 0 1 0 0] --> we include all words which have 'a' but dont have crne --> ALREADY DONE
@@ -108,7 +110,6 @@ class State:
         #Ideally we want some metric that we can then use to potentially gain a "not best" guess
         #Will be useful for the competitive wordle
 
-        return "hello"
     
     def validate_guess(self, guess):
         with open('wordle_list.json', 'r') as wordle_list:
@@ -120,7 +121,6 @@ class State:
         return self.good_word
 
     def evaluate(self, guess):
-        #TODO: Right now no check for duplicates
         chars_word = [*self.secret_word]
         feedback = ["-"] * len(self.secret_word)
         self.counter = Counter()
@@ -145,7 +145,6 @@ class State:
             elif guess[i] in chars_word and self.counter[guess[i]] > self.secret_word.count(guess[i]):
                 self.update_board(i, 0, guess)
                 feedback[i] = "-"
-                # self.counter[guess[i]] += 1
 
         #Trim the alphabet
         self.alphabet_dict = {key: value for key, value in self.alphabet_dict.items() if value != 0}

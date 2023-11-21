@@ -3,7 +3,7 @@ import json
 import random
 
 NUM_LETTERS = 5
-TOTAL_GUESSES = 8
+TOTAL_GUESSES = 6
 
 with open("wordle_list.json", "r") as wordle_list:
     word_list = json.load(wordle_list)
@@ -17,7 +17,7 @@ tot_guesses = 0
 
 for i in range(10):
     try:
-        secret_word = "erred" #random.choice(word_list)
+        secret_word = random.choice(word_list) #erred
         print("SECRET WORD: " + secret_word)
 
         my_state = state.State(NUM_LETTERS, TOTAL_GUESSES, secret_word)
@@ -44,7 +44,7 @@ for i in range(10):
             finished = my_state.evaluate(new_guess)
             num_guesses += 1
 
-            new_guess = my_state.get_new_guess()
+        new_guess = my_state.get_new_guess()
 
         print("Secret word", secret_word)
         print("Guesses Taken", num_guesses+1)
