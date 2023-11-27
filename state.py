@@ -6,6 +6,7 @@ from collections import Counter
 class State:
 
     def __init__(self, num_letters, tot_guesses, secret_word):
+        self.max_guesses = tot_guesses
         self.num_letters = num_letters
         self.board = [[]] * tot_guesses # Contains each guess
         self.result = np.full((tot_guesses, num_letters), -1)
@@ -31,7 +32,8 @@ class State:
     def update_board(self, i, value, guess):
         self.board[self.current_guess] = guess
         self.result[self.current_guess][i] = value
-        self.alphabet_dict[guess[i]] = max(value, self.alphabet_dict[guess[i]])
+        if guess[i] in self.alphabet_dict:
+            self.alphabet_dict[guess[i]] = max(value, self.alphabet_dict[guess[i]])
         self.curr_score += 1
 
     def get_words_consistent_with_2(self, vocab_in):
@@ -103,8 +105,14 @@ class State:
         #     if not next_guess in self.board:
         #         is_new = True
         #         return random.choice(filtered_vocab)
+
+        if len(filtered_vocab) == 1 and self.current_guess < self.max_guesses - 1:
+            print(self.board[self.current_guess-1])
+            print(filtered_vocab)
+            next_guess = self.board[self.current_guess-1]
+        else:
+            next_guess = random.choice(filtered_vocab)
         
-        next_guess = random.choice(filtered_vocab)
         return next_guess
 
         #Ideally we want some metric that we can then use to potentially gain a "not best" guess
