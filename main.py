@@ -15,18 +15,26 @@ tot_guesses = 0
 
 for i in range(1000):
     try:
-        secret_word = random.choice(word_list)
-        print("SECRET WORD: " + secret_word)
+        #secret_word = random.choice(word_list)
+        print("SECRET WORD: " + secret_word)secret_word = "idles"
+
 
         my_state = state.State(NUM_LETTERS, TOTAL_GUESSES, secret_word)
 
-        my_state.evaluate("crane")
-        my_state.display()
+val = my_state.validate_guess("label")
+if my_state.good_word == True:
+            my_state.evaluate("label")
+            my_state.display()
+else:
+    print("Please guess a valid word.")
+#my_state.evaluate("aniti")
+#my_state.display()
 
-        # my_state.evaluate("toils")
+        # my_state.evaluate("idles")
         # my_state.display()
 
-        num_guesses = 0
+my_state.evaluate("hiker")
+my_state.display()
 
         finished = False
         while not finished and num_guesses < TOTAL_GUESSES-1:
