@@ -15,27 +15,20 @@ tot_guesses = 0
 
 # Board:  ['crane', 'fixes', 'sells', 'belly', [], [], [], []]
 
-for i in range(10):
+for i in range(1):
     try:
-        secret_word = random.choice(word_list) #erred
+        secret_word = "puffy" #random.choice(word_list) #erase 
         print("SECRET WORD: " + secret_word)
 
         my_state = state.State(NUM_LETTERS, TOTAL_GUESSES, secret_word)
 
-val = my_state.validate_guess("label")
-if my_state.good_word == True:
-            my_state.evaluate("label")
-            my_state.display()
-else:
-    print("Please guess a valid word.")
-#my_state.evaluate("aniti")
-#my_state.display()
+        my_state.evaluate("fluff") #geese
+        #my_state.display()
 
-        # my_state.evaluate("idles")
+        # my_state.evaluate("toils")
         # my_state.display()
 
-my_state.evaluate("hiker")
-my_state.display()
+        num_guesses = 0
 
         finished = False
 
@@ -69,5 +62,3 @@ print("Total successes", num_success)
 print("Total failures", num_fail)
 print("Total errors", num_error)
 print("Total guesses", tot_guesses)
-
-    

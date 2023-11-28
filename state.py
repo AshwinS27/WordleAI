@@ -68,6 +68,65 @@ class State:
             return filter_words(vocab_in)
         else:
             return vocab_in
+    
+
+    """
+    ##TODO: Remove words which have letters with score 1 == definitely in the wrong place
+    ## If word is crane == [0 0 1 0 0] --> we include all words which have 'a' but dont have crne --> ALREADY DONE
+    ## WHAT WE DONT HAVE RN --> We are not removing words which have __a__ in the second index
+    """
+    def get_words_consistent_with_1(self, vocab_in):
+        #First check if there are any ones else return vocab_in as is
+        letters_in_ones = [key for key, value in self.alphabet_dict.items() if value == 1]
+        print(letters_in_ones)
+        
+        if letters_in_ones:
+            last_guess = self.board[self.current_guess-1]
+
+            def get_all_indices(word, letter):
+                return [i for i in range(len(word)) if word[i] == letter]
+
+            letter_indices = [get_all_indices(last_guess, letter) for letter in letters_in_ones]
+            # ^ List of list of indices for each letter so hello = 01110 will be [[1], [2,3]]
+            
+            print("Vocab_in", vocab_in)
+            print(letter_indices)
+            print(letters_in_ones)
+
+            filter_letter_indices = []
+            repeated_letters_in_place = []
+
+            for index_set, letter in zip(letter_indices, letters_in_ones):
+                #Remove all words from vocab which contain 'letter' in the index_set indices
+                for index in index_set:
+                    if self.result[self.current_guess-1][index] == 1: #Only keep it if correct place
+                        filter_letter_indices.append(index)
+                        repeated_letters_in_place.append(letter)
+
+            print(filter_letter_indices)
+            print(repeated_letters_in_place)
+
+            def filter_words(vocabulary):
+                filtered_vocabulary = []
+                to_remove_words = []
+                for word in vocabulary:
+                    for index, letter in zip(filter_letter_indices, repeated_letters_in_place):
+                        if word[index] == letter:
+                            to_remove_words.append(word)
+
+                filtered_vocabulary = list(set(vocab_in) - set(to_remove_words))
+                print("Filter Vocab ",filtered_vocabulary)
+                return filtered_vocabulary
+            
+            return filter_words(vocab_in)
+            
+        else:
+            return vocab_in
+        #Find the letter in the ones place
+
+        #Remove words from vocab_in which have the letters in ones places
+        pass
+
         
     def get_new_guess(self):
         possible_letters = self.alphabet_dict.keys()
@@ -81,10 +140,12 @@ class State:
             if len(word) == 5 and set(word).issubset(set(possible_letters)):
                 valid_words.append(word)
 
-        filtered_vocab = [key for key, value in self.alphabet_dict.items() if value > 0]
+        non_zero_letters = [key for key, value in self.alphabet_dict.items() if value > 0]
 
         #Remove words which don't contain '1' letters
-        filtered_vocab = [word for word in valid_words if set(filtered_vocab).issubset(set(word))]
+        filtered_vocab = [word for word in valid_words if set(non_zero_letters).issubset(set(word))]
+
+        filtered_vocab = self.get_words_consistent_with_1(filtered_vocab)
 
         #Remove words not consistent with '2' letters
         filtered_vocab = self.get_words_consistent_with_2(filtered_vocab)
@@ -105,8 +166,8 @@ class State:
         #     if not next_guess in self.board:
         #         is_new = True
         #         return random.choice(filtered_vocab)
-
-        if len(filtered_vocab) == 1 and self.current_guess < self.max_guesses - 1:
+        multiplayer = False
+        if len(filtered_vocab) == 1 and self.current_guess < self.max_guesses - 1 and multiplayer:
             print(self.board[self.current_guess-1])
             print(filtered_vocab)
             next_guess = self.board[self.current_guess-1]
@@ -146,6 +207,8 @@ class State:
             else:
                 self.update_board(i, 0, guess)
 
+        print("counter", self.counter)
+        print("secret word", self.secret_word.count)
         # finding letters that are out of place
         for i in range(len(self.secret_word)):
             if feedback[i] == "X":
@@ -153,6 +216,7 @@ class State:
             elif guess[i] in chars_word and self.counter[guess[i]] > self.secret_word.count(guess[i]):
                 self.update_board(i, 0, guess)
                 feedback[i] = "-"
+                self.counter[guess[i]] -= 1
 
         #Trim the alphabet
         self.alphabet_dict = {key: value for key, value in self.alphabet_dict.items() if value != 0}
