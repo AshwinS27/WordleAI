@@ -5,7 +5,7 @@ from collections import Counter
 
 class State:
 
-    def __init__(self, num_letters, tot_guesses, secret_word):
+    def __init__(self, num_letters, tot_guesses, secret_word, multiplayer = False, playing_octordle=False):
         self.max_guesses = tot_guesses
         self.num_letters = num_letters
         self.board = [[]] * tot_guesses # Contains each guess
@@ -17,10 +17,13 @@ class State:
         self.last_guess = ""
         self.good_word = True
         self.counter = Counter()
+        self.multiplayer = multiplayer
+        self.octordle = playing_octordle
 
     def display(self):
         print("GUESS NUMBER ", self.current_guess)
         print("Board: ", self.board)
+        print("Secret word: ", self.secret_word)
         print("Result: ")
         print(self.result)
         print("Alphabet: ", self.alphabet_dict)
@@ -51,9 +54,10 @@ class State:
             repeated_letters_in_place = []
             for index_set, letter in zip(letter_indices, letters_in_place):
                 for index in index_set:
-                    if self.result[self.current_guess-1][index] == 2: #Only keep it if correct place
-                        filter_letter_indices.append(index)
-                        repeated_letters_in_place.append(letter)
+                    for i in range(1, self.current_guess):
+                        if self.result[self.current_guess-1][index] == 2: #Only keep it if correct place
+                            filter_letter_indices.append(index)
+                            repeated_letters_in_place.append(letter)
 
             #Remove words which don't have letters with score 2 in correct place
             def filter_words(vocabulary):
@@ -78,7 +82,7 @@ class State:
     def get_words_consistent_with_1(self, vocab_in):
         #First check if there are any ones else return vocab_in as is
         letters_in_ones = [key for key, value in self.alphabet_dict.items() if value == 1]
-        print(letters_in_ones)
+        # print(letters_in_ones)
         
         if letters_in_ones:
             last_guess = self.board[self.current_guess-1]
@@ -89,9 +93,9 @@ class State:
             letter_indices = [get_all_indices(last_guess, letter) for letter in letters_in_ones]
             # ^ List of list of indices for each letter so hello = 01110 will be [[1], [2,3]]
             
-            print("Vocab_in", vocab_in)
-            print(letter_indices)
-            print(letters_in_ones)
+            # print("Vocab_in", vocab_in)
+            # print(letter_indices)
+            # print(letters_in_ones)
 
             filter_letter_indices = []
             repeated_letters_in_place = []
@@ -103,8 +107,8 @@ class State:
                         filter_letter_indices.append(index)
                         repeated_letters_in_place.append(letter)
 
-            print(filter_letter_indices)
-            print(repeated_letters_in_place)
+            # print(filter_letter_indices)
+            # print(repeated_letters_in_place)
 
             def filter_words(vocabulary):
                 filtered_vocabulary = []
@@ -115,7 +119,7 @@ class State:
                             to_remove_words.append(word)
 
                 filtered_vocabulary = list(set(vocab_in) - set(to_remove_words))
-                print("Filter Vocab ",filtered_vocabulary)
+                # print("Filter Vocab ",filtered_vocabulary)
                 return filtered_vocabulary
             
             return filter_words(vocab_in)
@@ -166,8 +170,10 @@ class State:
         #     if not next_guess in self.board:
         #         is_new = True
         #         return random.choice(filtered_vocab)
-        multiplayer = False
-        if len(filtered_vocab) == 1 and self.current_guess < self.max_guesses - 1 and multiplayer:
+        if self.octordle:
+            return filtered_vocab
+
+        if len(filtered_vocab) == 1 and self.current_guess < self.max_guesses - 1 and self.multiplayer:
             print(self.board[self.current_guess-1])
             print(filtered_vocab)
             next_guess = self.board[self.current_guess-1]
@@ -221,7 +227,7 @@ class State:
         #Trim the alphabet
         self.alphabet_dict = {key: value for key, value in self.alphabet_dict.items() if value != 0}
         self.current_guess += 1
-        self.display()
+        # self.display()
 
         if guess == self.secret_word:
             print("YOU HAVE SOLVED THE WORDLE!!")

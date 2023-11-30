@@ -34,13 +34,6 @@ for i in range(100):
 
         finished = False
 
-        # ## FOR DEBUG ONLY ##
-        # my_state.evaluate("fixes")
-        # num_guesses += 1
-        # my_state.evaluate("sells")
-        # num_guesses += 1
-        # ## END DEBUG ONLY ##
-
         while not finished and num_guesses < TOTAL_GUESSES-1:
             if num_guesses % 2 == 0:
                 player_1 = True
