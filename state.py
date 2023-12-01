@@ -170,6 +170,11 @@ class State:
         #     if not next_guess in self.board:
         #         is_new = True
         #         return random.choice(filtered_vocab)
+
+        #Remove words in board from filtered_vocab
+        print(filtered_vocab)
+        filtered_vocab = [item for item in filtered_vocab if item not in self.board]
+        
         if self.octordle:
             return filtered_vocab
 
@@ -213,8 +218,6 @@ class State:
             else:
                 self.update_board(i, 0, guess)
 
-        print("counter", self.counter)
-        print("secret word", self.secret_word.count)
         # finding letters that are out of place
         for i in range(len(self.secret_word)):
             if feedback[i] == "X":
@@ -233,3 +236,5 @@ class State:
             print("YOU HAVE SOLVED THE WORDLE!!")
             print("------------------------------------")
             return True
+        
+        return False

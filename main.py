@@ -17,12 +17,12 @@ tot_guesses = 0
 
 for i in range(1):
     try:
-        secret_word = "puffy" #random.choice(word_list) #erase 
+        secret_word = "mercy" #random.choice(word_list) #erase 
         print("SECRET WORD: " + secret_word)
 
         my_state = state.State(NUM_LETTERS, TOTAL_GUESSES, secret_word)
 
-        my_state.evaluate("fluff") #geese
+        my_state.evaluate("crane") #geese
         #my_state.display()
 
         # my_state.evaluate("toils")
@@ -42,6 +42,7 @@ for i in range(1):
         while not finished and num_guesses < TOTAL_GUESSES-1:
             new_guess = my_state.get_new_guess()
             finished = my_state.evaluate(new_guess)
+            my_state.display()
             num_guesses += 1
 
         new_guess = my_state.get_new_guess()
