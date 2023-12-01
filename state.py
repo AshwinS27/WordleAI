@@ -75,9 +75,7 @@ class State:
     
 
     """
-    ##TODO: Remove words which have letters with score 1 == definitely in the wrong place
-    ## If word is crane == [0 0 1 0 0] --> we include all words which have 'a' but dont have crne --> ALREADY DONE
-    ## WHAT WE DONT HAVE RN --> We are not removing words which have __a__ in the second index
+    Remove words which have letters with score 1 == definitely in the wrong place
     """
     def get_words_consistent_with_1(self, vocab_in):
         #First check if there are any ones else return vocab_in as is
@@ -92,10 +90,6 @@ class State:
 
             letter_indices = [get_all_indices(last_guess, letter) for letter in letters_in_ones]
             # ^ List of list of indices for each letter so hello = 01110 will be [[1], [2,3]]
-            
-            # print("Vocab_in", vocab_in)
-            # print(letter_indices)
-            # print(letters_in_ones)
 
             filter_letter_indices = []
             repeated_letters_in_place = []
@@ -106,9 +100,6 @@ class State:
                     if self.result[self.current_guess-1][index] == 1: #Only keep it if correct place
                         filter_letter_indices.append(index)
                         repeated_letters_in_place.append(letter)
-
-            # print(filter_letter_indices)
-            # print(repeated_letters_in_place)
 
             def filter_words(vocabulary):
                 filtered_vocabulary = []
@@ -126,12 +117,8 @@ class State:
             
         else:
             return vocab_in
-        #Find the letter in the ones place
 
-        #Remove words from vocab_in which have the letters in ones places
-        pass
 
-        
     def get_new_guess(self):
         possible_letters = self.alphabet_dict.keys()
 
@@ -154,31 +141,16 @@ class State:
         #Remove words not consistent with '2' letters
         filtered_vocab = self.get_words_consistent_with_2(filtered_vocab)
 
-        ##TODO: Remove words which have letters with score 1 == definitely in the wrong place
-        ## If word is crane == [0 0 1 0 0] --> we include all words which have 'a' but dont have crne --> ALREADY DONE
-        ## WHAT WE DONT HAVE RN --> We are not removing words which have __a__ in the second index
-
-        #Get respective index of each '1' letter
-        #Remove words which have '1' letter in last guess spot
-
-        is_new = False
-
-        #TODO: This doesn't work?? --> gets stuck in infinite loop
-        #This tries to find a non-repeated work from the filtered vocab
-        # while not is_new:
-        #     next_guess = random.choice(filtered_vocab)
-        #     if not next_guess in self.board:
-        #         is_new = True
-        #         return random.choice(filtered_vocab)
-
         #Remove words in board from filtered_vocab
-        print(filtered_vocab)
         filtered_vocab = [item for item in filtered_vocab if item not in self.board]
         
         if self.octordle:
             return filtered_vocab
 
-        if len(filtered_vocab) == 1 and self.current_guess < self.max_guesses - 1 and self.multiplayer:
+        print(self.current_guess)
+        if len(filtered_vocab) < 5:
+            next_guess = random.choice(filtered_vocab)
+        elif len(filtered_vocab) < 20 and self.current_guess < self.max_guesses - 1 and self.multiplayer:
             print(self.board[self.current_guess-1])
             print(filtered_vocab)
             next_guess = self.board[self.current_guess-1]
@@ -233,8 +205,8 @@ class State:
         # self.display()
 
         if guess == self.secret_word:
-            print("YOU HAVE SOLVED THE WORDLE!!")
-            print("------------------------------------")
+            # print("YOU HAVE SOLVED THE WORDLE!!")
+            # print("------------------------------------")
             return True
         
         return False
