@@ -6,7 +6,7 @@ import numpy as np
 from tqdm import tqdm
 
 NUM_LETTERS = 5
-TOTAL_GUESSES = 13
+TOTAL_GUESSES = 15
 NUM_BOARDS = 8
 
 with open("wordle_list.json", "r") as wordle_list:
@@ -15,11 +15,11 @@ with open("wordle_list.json", "r") as wordle_list:
 
 word_sets = [
     ['blimp','ghost','cured','fawny'],
-    ['pudgy','mince','balks','froth'],
-    ['graft','lines','ducky','whomp'],
-    ['fakes','glory','chimp','bundt'],
-    ['arose','cubit','nymph'],
-    ['ratio','mends','lucky']
+    # ['pudgy','mince','balks','froth'],
+    # ['graft','lines','ducky','whomp'],
+    # ['fakes','glory','chimp','bundt'],
+    # ['arose','cubit','nymph'],
+    # ['ratio','mends','lucky']
     ]
 
 def run_one_octordle(tot_guesses, num_error, word_set):
@@ -113,7 +113,7 @@ def run_word_set_trials(word_set):
 
     correct_arr = []
     guesses = []
-    for i in tqdm(range(10000)):
+    for i in tqdm(range(1000)):
         correct_iter, tot_guesses, num_error, num_guesses = run_one_octordle(tot_guesses, num_error, word_set)
         correct += correct_iter
         correct_arr.append(correct_iter)
