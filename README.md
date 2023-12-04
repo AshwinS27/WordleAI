@@ -11,5 +11,5 @@ All three files use the `State` class to keep track of board & for making the gu
 Links to play the game:
 1. [Wordle](https://www.nytimes.com/games/wordle/index.html)
 2. [Octordle](https://www.britannica.com/games/octordle/daily)
-3. [CoWordle]https://cowordle.org/
+3. [CoWordle](https://cowordle.org/)
 
