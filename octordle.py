@@ -2,6 +2,8 @@ import state
 import json
 import random
 import matplotlib.pyplot as plt
+import numpy as np
+from tqdm import tqdm
 
 NUM_LETTERS = 5
 TOTAL_GUESSES = 13
@@ -12,12 +14,12 @@ with open("wordle_list.json", "r") as wordle_list:
 
 
 word_sets = [
-    ['bumpy','ghost','flick','wared'],
     ['blimp','ghost','cured','fawny'],
     ['pudgy','mince','balks','froth'],
     ['graft','lines','ducky','whomp'],
     ['fakes','glory','chimp','bundt'],
-    ['arose','cubit','nymph']
+    ['arose','cubit','nymph'],
+    ['ratio','mends','lucky']
     ]
 
 def run_one_octordle(tot_guesses, num_error, word_set):
@@ -62,7 +64,7 @@ def run_one_octordle(tot_guesses, num_error, word_set):
             secret_words.append(secret_word)
             states.append(state.State(NUM_LETTERS, TOTAL_GUESSES, secret_word, playing_octordle=True))
         
-        print("SECRET WORD: ", secret_words)
+        # print("SECRET WORD: ", secret_words)
         first_words = word_set #['graft','lines','ducky','whomp'] #['arose','cubit','nymph'] #
         ## Four words is better strategy that 3 --> empircally
         
@@ -82,7 +84,7 @@ def run_one_octordle(tot_guesses, num_error, word_set):
         if new_guess: #Otherwise already guessed
             for i in range(len(states)):
                 result = states[i].evaluate(new_guess)
-                states[i].display()
+                # states[i].display()
         num_guesses += 1
         if len(states) > 0:
             last_state = states[0]
@@ -111,7 +113,7 @@ def run_word_set_trials(word_set):
 
     correct_arr = []
     guesses = []
-    for i in range(1000):
+    for i in tqdm(range(10000)):
         correct_iter, tot_guesses, num_error, num_guesses = run_one_octordle(tot_guesses, num_error, word_set)
         correct += correct_iter
         correct_arr.append(correct_iter)
@@ -139,5 +141,18 @@ for word_set in word_sets:
     successes.append(success)
     fails.append(fail)
 
-plt.plot(successes)
+
+np_s = np.array(successes)
+np_f = np.array(fails)
+
+
+accuracy = np_s/(np_s + np_f)
+print(accuracy)
+first_words = [word_set[0] for word_set in word_sets]
+plt.bar(first_words,accuracy)
+
+plt.xlabel('Word Set (first word)')
+plt.ylabel('Success Rate')
+plt.title('Success Rate for ech Word Set')
+
 plt.show()

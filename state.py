@@ -2,6 +2,8 @@ import numpy as np
 import json
 import random
 from collections import Counter
+import pprint
+from colorama import Fore, Back, Style
 
 class State:
 
@@ -20,13 +22,61 @@ class State:
         self.multiplayer = multiplayer
         self.octordle = playing_octordle
 
+    def print_dict(self,d, col_width=80, sep=','):
+        if not len(d):
+            print('{}')
+            return
+        def get_str(k, v):
+            return '%s: %s' % (k, v)
+
+
+        print('{', end='')
+        items = iter(d.items())
+        
+        entry = get_str(*next(items))
+        used_width = len(entry)
+        print(entry, end='')
+
+        for k, v in items:
+            entry = get_str(k, v)
+            
+            # if the current entry's string rep will cause an overflow, and the current line
+            # isn't blank, then go to the next line
+            new_line = used_width + len(entry) > col_width and used_width > 0
+            if new_line:
+                print(f'{sep}\n', end='')
+                used_width = 0
+            
+            print((f'{sep} ' if not new_line else '') + get_str(k, v), end='')
+            used_width += len(entry)
+
+        print('}')
+
+    def print_colored_2d_array(self, array_2d):
+        for row in array_2d:
+            for item in row:
+                if item == -1:
+                    print(Fore.WHITE + 'X', end="  ")
+                elif item == 0:
+                    print(Fore.RED+ str(item), end="  ")
+                elif item == 1:
+                    print(Fore.YELLOW + str(item), end="  ")
+                elif item == 2:
+                    print(Fore.GREEN + str(item), end="  ")
+                else:
+                    print(str(item), end="  ")
+            print()  # Move to the next row
+
     def display(self):
+        pp = pprint.PrettyPrinter(indent=4)
+        
         print("GUESS NUMBER ", self.current_guess)
         print("Board: ", self.board)
-        print("Secret word: ", self.secret_word)
-        print("Result: ")
-        print(self.result)
-        print("Alphabet: ", self.alphabet_dict)
+        print(Fore.BLUE, "Secret word: ", self.secret_word)
+        print(Style.RESET_ALL, "Result: ")
+        self.print_colored_2d_array(self.result)
+        print(Style.RESET_ALL, "Alphabet: ")
+        self.print_dict(self.alphabet_dict)
         print("--------------------------------------------------------")
 
     def get_alphabet_index(self, char):
